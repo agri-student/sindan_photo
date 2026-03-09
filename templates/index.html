@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>農作物 生育診断</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>農作物 生育診断</h1>
+            <p class="subtitle">スマホで撮った写真をAIが分析します</p>
+        </header>
+
+        <main>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📷</div>
+                <p>写真をタップして選択<br>またはドラッグ&ドロップ</p>
+                <input type="file" id="fileInput" accept="image/*" capture="environment">
+            </div>
+
+            <div class="preview-area" id="previewArea" style="display: none;">
+                <img id="previewImage" alt="プレビュー">
+                <button class="btn btn-secondary" id="resetBtn">写真を変更</button>
+            </div>
+
+            <button class="btn btn-primary" id="analyzeBtn" disabled>診断する</button>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>AIが分析中です...</p>
+            </div>
+
+            <div class="result-area" id="resultArea" style="display: none;">
+                <h2>診断結果</h2>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
