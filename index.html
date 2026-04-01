@@ -424,7 +424,7 @@
                 },
                 body: JSON.stringify({
                     model: "claude-sonnet-4-20250514",
-                    max_tokens: 2048,
+                    max_tokens: 4096,
                     system: systemPrompt,
                     messages: [{
                         role: "user",
@@ -449,7 +449,7 @@
                 },
                 body: JSON.stringify({
                     model: "gpt-4o",
-                    max_tokens: 2048,
+                    max_tokens: 4096,
                     messages: [
                         { role: "system", content: systemPrompt },
                         {
@@ -480,7 +480,7 @@
                             { text: userText },
                         ],
                     }],
-                    generationConfig: { maxOutputTokens: 2048 },
+                    generationConfig: { maxOutputTokens: 4096 },
                 }),
             });
             const data = await response.json();

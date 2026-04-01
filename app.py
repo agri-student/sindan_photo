@@ -81,7 +81,7 @@ def analyze():
             client = openai.OpenAI(api_key=api_key)
             response = client.chat.completions.create(
                 model="gpt-4o",
-                max_tokens=2048,
+                max_tokens=4096,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {
@@ -107,7 +107,7 @@ def analyze():
             client = anthropic.Anthropic()
             message = client.messages.create(
                 model="claude-sonnet-4-20250514",
-                max_tokens=2048,
+                max_tokens=4096,
                 system=SYSTEM_PROMPT,
                 messages=[
                     {
