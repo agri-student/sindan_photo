@@ -14,6 +14,16 @@
         </header>
 
         <main>
+            <div class="api-key-area">
+                <label>AIサービス選択</label>
+                <select id="providerSelect">
+                    <option value="anthropic">Claude (Anthropic)</option>
+                    <option value="openai">ChatGPT (OpenAI)</option>
+                    <option value="google">Gemini (Google)</option>
+                </select>
+                <p class="hint">サーバー側の環境変数に対応するAPIキーを設定してください</p>
+            </div>
+
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📷</div>
                 <p>写真をタップして選択<br>またはドラッグ&ドロップ</p>

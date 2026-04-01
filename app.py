@@ -2,6 +2,8 @@ import os
 import base64
 
 import anthropic
+import google.generativeai as genai
+import openai
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
 
@@ -9,8 +11,6 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB
-
-client = anthropic.Anthropic()
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
@@ -64,35 +64,65 @@ def analyze():
     }
     media_type = media_type_map[ext]
 
+    provider = request.form.get("provider", "anthropic")
+    user_text = "この農作物の写真を分析して、生育状態を診断してください。"
+
     try:
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=2048,
-            system=SYSTEM_PROMPT,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": media_type,
-                                "data": base64_image,
+        if provider == "openai":
+            api_key = os.environ.get("OPENAI_API_KEY", "")
+            client = openai.OpenAI(api_key=api_key)
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                max_tokens=2048,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "image_url", "image_url": {"url": f"data:{media_type};base64,{base64_image}"}},
+                            {"type": "text", "text": user_text},
+                        ],
+                    },
+                ],
+            )
+            result = response.choices[0].message.content
+        elif provider == "google":
+            api_key = os.environ.get("GOOGLE_API_KEY", "")
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel("gemini-2.0-flash", system_instruction=SYSTEM_PROMPT)
+            response = model.generate_content([
+                {"mime_type": media_type, "data": base64_image},
+                user_text,
+            ])
+            result = response.text
+        else:
+            client = anthropic.Anthropic()
+            message = client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=2048,
+                system=SYSTEM_PROMPT,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": media_type,
+                                    "data": base64_image,
+                                },
                             },
-                        },
-                        {
-                            "type": "text",
-                            "text": "この農作物の写真を分析して、生育状態を診断してください。",
-                        },
-                    ],
-                }
-            ],
-        )
-        result = message.content[0].text
+                            {"type": "text", "text": user_text},
+                        ],
+                    }
+                ],
+            )
+            result = message.content[0].text
+
         return jsonify({"result": result})
-    except anthropic.APIError as e:
-        return jsonify({"error": f"AI分析中にエラーが発生しました: {e.message}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"AI分析中にエラーが発生しました: {str(e)}"}), 500
 
 
 if __name__ == "__main__":

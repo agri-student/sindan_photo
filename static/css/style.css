@@ -33,6 +33,45 @@ header h1 {
     font-size: 0.9rem;
 }
 
+/* API Key / Provider */
+.api-key-area {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.api-key-area label {
+    display: block;
+    font-weight: 600;
+    color: #2d6a2e;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.api-key-area select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.api-key-area select:focus {
+    outline: none;
+    border-color: #2d6a2e;
+}
+
+.api-key-area .hint {
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 6px;
+}
+
 .upload-area {
     border: 3px dashed #a0c4a0;
     border-radius: 16px;

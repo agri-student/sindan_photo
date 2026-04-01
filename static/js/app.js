@@ -68,6 +68,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const formData = new FormData();
     formData.append("image", selectedFile);
+    const providerSelect = document.getElementById("providerSelect");
+    if (providerSelect) {
+      formData.append("provider", providerSelect.value);
+    }
 
     try {
       const response = await fetch("/analyze", {
