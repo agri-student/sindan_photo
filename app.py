@@ -89,7 +89,7 @@ def analyze():
         elif provider == "google":
             api_key = os.environ.get("GOOGLE_API_KEY", "")
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("gemini-2.0-flash", system_instruction=SYSTEM_PROMPT)
+            model = genai.GenerativeModel("gemini-2.5-flash", system_instruction=SYSTEM_PROMPT)
             response = model.generate_content([
                 {"mime_type": media_type, "data": base64_image},
                 user_text,
