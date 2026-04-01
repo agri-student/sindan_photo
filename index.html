@@ -219,7 +219,6 @@
 
         .result-content {
             line-height: 1.8;
-            white-space: pre-wrap;
             word-wrap: break-word;
             font-size: 0.95rem;
         }
@@ -258,7 +257,7 @@
                     <span class="saved-badge" id="savedBadge" style="display:none">保存済み</span>
                 </label>
                 <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
-                <p class="hint">キーはブラウザにのみ保存され、外部には送信されません</p>
+                <p class="hint">キーはブラウザに保存され、選択したAIサービスに直接送信されます</p>
             </div>
 
             <div class="upload-area" id="uploadArea">
@@ -302,6 +301,8 @@
         const resultContent = document.getElementById("resultContent");
 
         let selectedFile = null;
+        const MAX_FILE_SIZE = 16 * 1024 * 1024; // 16MB
+        const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
 
         const providerConfig = {
             anthropic: { placeholder: "sk-ant-api03-...", storageKey: "anthropic_api_key" },
@@ -341,7 +342,20 @@
             }
         });
 
+        function validateFile(file) {
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                showError("対応していないファイル形式です（PNG, JPG, GIF, WebP のみ）");
+                return false;
+            }
+            if (file.size > MAX_FILE_SIZE) {
+                showError("ファイルサイズが大きすぎます（16MB以下にしてください）");
+                return false;
+            }
+            return true;
+        }
+
         function showPreview(file) {
+            if (!validateFile(file)) return;
             selectedFile = file;
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -491,9 +505,7 @@
 
             try {
                 const base64Image = await fileToBase64(selectedFile);
-                const ext = selectedFile.name.split(".").pop().toLowerCase();
-                const mediaTypeMap = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif", webp: "image/webp" };
-                const mediaType = mediaTypeMap[ext] || "image/jpeg";
+                const mediaType = selectedFile.type || "image/jpeg";
 
                 const callFn = providerCallMap[providerSelect.value];
                 const resultText = await callFn(apiKey, base64Image, mediaType);
@@ -528,7 +540,8 @@
         }
 
         function formatResult(text) {
-            return text
+            const escaped = escapeHtml(text);
+            return escaped
                 .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
                 .replace(/^### (.+)$/gm, "<h3>$1</h3>")
                 .replace(/^## (.+)$/gm, "<h2>$1</h2>")

@@ -195,11 +195,19 @@ header h1 {
 
 .result-content {
     line-height: 1.8;
-    white-space: pre-wrap;
     word-wrap: break-word;
     font-size: 0.95rem;
 }
 
 .result-content strong {
     color: #2d6a2e;
+}
+
+.error-msg {
+    background: #fff0f0;
+    color: #c33;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+    font-size: 0.9rem;
 }

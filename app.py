@@ -1,5 +1,6 @@
 import os
 import base64
+import logging
 
 import anthropic
 import google.generativeai as genai
@@ -11,8 +12,13 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", os.urandom(32).hex())
+
+logger = logging.getLogger(__name__)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+ALLOWED_MIME_TYPES = {"image/png", "image/jpeg", "image/gif", "image/webp"}
+ALLOWED_PROVIDERS = {"anthropic", "openai", "google"}
 
 SYSTEM_PROMPT = """あなたは農業の専門家です。ユーザーがアップロードした農作物の写真を分析し、以下の観点から生育状態を診断してください。
 
@@ -28,6 +34,8 @@ SYSTEM_PROMPT = """あなたは農業の専門家です。ユーザーがアッ�
 ## 回答形式
 わかりやすい日本語で、農業初心者にも理解できるように回答してください。
 写真が農作物でない場合は、その旨を伝えてください。"""
+
+USER_TEXT = "この農作物の写真を分析して、生育状態を診断してください。"
 
 
 def allowed_file(filename):
@@ -51,6 +59,9 @@ def analyze():
     if not allowed_file(file.filename):
         return jsonify({"error": "対応していないファイル形式です（PNG, JPG, GIF, WebP のみ）"}), 400
 
+    if file.content_type not in ALLOWED_MIME_TYPES:
+        return jsonify({"error": "対応していないファイル形式です（PNG, JPG, GIF, WebP のみ）"}), 400
+
     image_data = file.read()
     base64_image = base64.b64encode(image_data).decode("utf-8")
 
@@ -65,7 +76,8 @@ def analyze():
     media_type = media_type_map[ext]
 
     provider = request.form.get("provider", "anthropic")
-    user_text = "この農作物の写真を分析して、生育状態を診断してください。"
+    if provider not in ALLOWED_PROVIDERS:
+        return jsonify({"error": "不正なAIサービスが指定されました"}), 400
 
     try:
         if provider == "openai":
@@ -80,7 +92,7 @@ def analyze():
                         "role": "user",
                         "content": [
                             {"type": "image_url", "image_url": {"url": f"data:{media_type};base64,{base64_image}"}},
-                            {"type": "text", "text": user_text},
+                            {"type": "text", "text": USER_TEXT},
                         ],
                     },
                 ],
@@ -92,7 +104,7 @@ def analyze():
             model = genai.GenerativeModel("gemini-2.5-flash", system_instruction=SYSTEM_PROMPT)
             response = model.generate_content([
                 {"mime_type": media_type, "data": base64_image},
-                user_text,
+                USER_TEXT,
             ])
             result = response.text
         else:
@@ -113,7 +125,7 @@ def analyze():
                                     "data": base64_image,
                                 },
                             },
-                            {"type": "text", "text": user_text},
+                            {"type": "text", "text": USER_TEXT},
                         ],
                     }
                 ],
@@ -122,8 +134,9 @@ def analyze():
 
         return jsonify({"result": result})
     except Exception as e:
-        return jsonify({"error": f"AI分析中にエラーが発生しました: {str(e)}"}), 500
+        logger.exception("AI分析中にエラーが発生しました")
+        return jsonify({"error": "AI分析中にエラーが発生しました。しばらく経ってから再度お試しください。"}), 500
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=os.environ.get("FLASK_DEBUG", "false").lower() == "true", host="0.0.0.0", port=5000)
