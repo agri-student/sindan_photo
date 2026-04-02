@@ -227,6 +227,20 @@
             color: #2d6a2e;
         }
 
+        .star-rating {
+            display: inline-block;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+        }
+
+        .star-rating .filled {
+            color: #f5a623;
+        }
+
+        .star-rating .empty {
+            color: #ddd;
+        }
+
         .error-msg {
             background: #fff0f0;
             color: #c33;
@@ -401,7 +415,7 @@
         const systemPrompt = `あなたは農業の専門家です。ユーザーがアップロードした農作物の写真を分析し、以下の観点から診断してください。
 
 ## 診断項目
-1. **健康状態**: 作物の種類を特定し、総合的な健康度を5段階で評価（★1〜★5）。葉の色・形・大きさや栄養状態（窒素・リン・カリウムなど）の異常も含めて判断してください。
+1. **健康状態**: 作物の種類を特定し、総合的な健康度を5段階で★と☆を使って表示してください（例: ★★★☆☆（星3つ／5段階中））。葉の色・形・大きさや栄養状態（窒素・リン・カリウムなど）の異常も含めて判断してください。
 2. **病害虫診断**: 病気や害虫被害の兆候の有無を診断。兆候があれば具体的な病名・害虫名を挙げ、症状の特徴を説明してください。
 3. **対策の提案**: 診断結果に基づき、今すぐ行うべき対処法と、今後の予防策を具体的に提案してください。
 
@@ -535,13 +549,22 @@
             return div.innerHTML;
         }
 
+        function formatStars(text) {
+            return text.replace(/[★☆]+/g, (match) => {
+                const stars = match.split("").map(s =>
+                    s === "★" ? '<span class="filled">★</span>' : '<span class="empty">☆</span>'
+                ).join("");
+                return `<span class="star-rating">${stars}</span>`;
+            });
+        }
+
         function formatResult(text) {
             const escaped = escapeHtml(text);
-            return escaped
+            return formatStars(escaped
                 .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
                 .replace(/^### (.+)$/gm, "<h3>$1</h3>")
                 .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-                .replace(/\n/g, "<br>");
+                .replace(/\n/g, "<br>"));
         }
     });
     </script>

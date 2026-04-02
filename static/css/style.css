@@ -203,6 +203,20 @@ header h1 {
     color: #2d6a2e;
 }
 
+.star-rating {
+    display: inline-block;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+}
+
+.star-rating .filled {
+    color: #f5a623;
+}
+
+.star-rating .empty {
+    color: #ddd;
+}
+
 .error-msg {
     background: #fff0f0;
     color: #c33;

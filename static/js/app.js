@@ -121,12 +121,21 @@ document.addEventListener("DOMContentLoaded", () => {
     resultArea.style.display = "block";
   }
 
+  function formatStars(text) {
+    return text.replace(/[★☆]+/g, (match) => {
+      const stars = match.split("").map(s =>
+        s === "★" ? '<span class="filled">★</span>' : '<span class="empty">☆</span>'
+      ).join("");
+      return `<span class="star-rating">${stars}</span>`;
+    });
+  }
+
   function formatResult(text) {
     const escaped = escapeHtml(text);
-    return escaped
+    return formatStars(escaped
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       .replace(/^### (.+)$/gm, "<h3>$1</h3>")
       .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-      .replace(/\n/g, "<br>");
+      .replace(/\n/g, "<br>"));
   }
 });
